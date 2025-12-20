@@ -5,6 +5,7 @@ const cors = require('cors')
 app.use(express.json())
 app.use(cors())
 
+app.use(express.static('dist'))
 
 let notes = [
   {
@@ -31,15 +32,10 @@ const generateId = () => {
 
 };
 
-app.get('/',(request, response) => {
-  response.send('<h1>Hello World!</h1>')
-});
+
 
 app.get('/api/notes', (request, response) => {
 
-  const maxId = Math.max(...notes.map(n=> Number(n.id)));
-  const note = request.body;
-  note.id = String(maxId + 1);
 
   response.json(notes);
 })
