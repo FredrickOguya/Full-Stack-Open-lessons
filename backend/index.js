@@ -41,6 +41,7 @@ app.get('/api/notes', (request, response) => {
 })
 
 
+
 app.get('/api/notes/:id',(request,response)=> {
   const id = request.params.id;
   const note = notes.find(note=> note.id === id)
@@ -96,3 +97,4 @@ app.put('/api/notes/:id', (request,response)=> {
 
 })
 
+//mongodb+srv://onyangofredrickoguya:<db_password>@cluster0.hxovx14.mongodb.net/?appName=Cluster0
