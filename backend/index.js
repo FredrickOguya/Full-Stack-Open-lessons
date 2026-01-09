@@ -4,7 +4,9 @@ const app = express();
 const cors = require('cors')
 const mongoose = require('mongoose');
 const password = process.argv[2]
-const url = `mongodb+srv://onyangofredrickoguya:${password}@cluster0.hxovx14.mongodb.net/noteApp?appName=Cluster0`
+
+const url = process.env.MONGODB_URI
+console.log('connecting to', url)
 
 
 app.use(express.json())
