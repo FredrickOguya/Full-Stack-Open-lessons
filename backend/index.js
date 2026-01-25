@@ -16,14 +16,7 @@ app.use(express.static('dist'))
 mongoose.set('strictQuery',false)
 mongoose.connect(url, { family: 4})
 
-const noteSchema = new mongoose.Schema({
-  content: {
-    type: String,
-    minLength: 5,
-    required: true
-  } ,
-  important: Boolean,
-})
+
 
 
 
@@ -41,7 +34,6 @@ const errorHandler = (error, request, response, next) => {
   next(error)
 }
 
-app.use(errorHandler)
 
 
 
@@ -90,6 +82,8 @@ app.post('/api/notes',(request,response, next)=> {
   })
   .catch(error => next(error))
 })
+app.use(errorHandler)
+
 
 const PORT = process.env.PORT 
 app.listen(PORT, ()=> {
