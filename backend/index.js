@@ -21,28 +21,22 @@ const noteSchema = new mongoose.Schema({
   important: Boolean,
 })
 
-noteSchema.set('toJSON', {
-  transform: (document, returnedObject)=> {
-    returnedObject.id = returnedObject._id.toString()
-    delete returnedObject._id
-    delete returnedObject.__v
-  }
-})
+
 
 const Note = require('./models/note')
 
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
 
+  if (error.name === 'CastError'){
+    return response.status(400).send({ error: 'malformatted id'})
+  }
 
-let notes = [];
+  next(error)
+}
 
+app.use(errorHandler)
 
-
-const generateId = () => {
-  
-  const maxId = notes.length> 0 ? Math.max(...notes.map(n=> Number(n.id))) : 0;
-  return String(maxId + 1);
-
-};
 
 
 
@@ -54,7 +48,7 @@ app.get('/api/notes', (request, response) => {
 
 
 
-app.get('/api/notes/:id',(request,response)=> {
+app.get('/api/notes/:id',(request,response,next)=> {
   Note.findById(request.params.id).then(note => {
     if(note){
       response.json(note)
@@ -62,17 +56,15 @@ app.get('/api/notes/:id',(request,response)=> {
       response.status(404).end()
     }
   })
-  .catch(error => {
-    console.log(error)
-    response.status(400).send({error: 'malformatted id'})
-  })
+  .catch(error => next(error))
 })
 
-app.delete('/api/notes/:id',(request,response) => {
-  const id = request.params.id;
-  notes = notes.filter((note)=> note.id !== id)
-
-  response.status(204).end()
+app.delete('/api/notes/:id',(request,response,next) => {
+  Note.findByIdAndDelete(request.params.id)
+   .then(result => {
+    response.status(204).end()
+   })
+   .catch(error => next(error))
 })
 app.post('/api/notes',(request,response)=> {
   const body = request.body
@@ -97,19 +89,22 @@ app.listen(PORT, ()=> {
   console.log(`Server running on port ${PORT}`)
 })
 
-app.put('/api/notes/:id', (request,response)=> {
-  const id = request.params.id;
-  const body = request.body;
-  const note = notes.find(note=> note.id === id);
-  
-  if(note){
-    changedNote = {...note,important: body.important}
+app.put('/api/notes/:id', (request,response,next)=> {
+  const { content, important } = request.body
 
-    notes = notes.map(n => n.id === id ? changedNote: n)
-    response.json(changedNote)
-  }
-  
+  Note.findById(request.params.id)
+  .then(note => {
+    if(!note){
+      return response.status(404).end()
+    }
 
+    note.content = content
+    note.important = important;
 
+    return note.save().then((updatedNote) => {
+      response.json(updatedNote)
+    })
+  })
+  .catch(error => next(error))
 })
 
